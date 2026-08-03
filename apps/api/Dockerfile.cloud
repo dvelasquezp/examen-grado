@@ -15,7 +15,12 @@ RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
 
 COPY apps/api/src ./src/
 
-ENV CONTENT_PATH=.
+# Directorio vacío: los materiales ya están ingestados en la base de datos.
+# Apuntar CONTENT_PATH a /app haría que el descubrimiento tomara src/ y
+# alembic/ como si fueran materias.
+RUN mkdir -p /app/content
+
+ENV CONTENT_PATH=/app/content
 ENV APP_ENV=production
 ENV PYTHONUNBUFFERED=1
 

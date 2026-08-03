@@ -102,9 +102,15 @@ export default function DashboardPage() {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
             {error}
             <p className="text-sm mt-1">
-              Asegúrate de que la API esté corriendo en{" "}
-              <code className="bg-red-100 px-1 rounded">localhost:8000</code>
+              Si la aplicación estuvo inactiva, puede tardar hasta un minuto en
+              despertar. Espera un momento y vuelve a cargar la página.
             </p>
+            <button
+              onClick={loadData}
+              className="mt-3 px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 

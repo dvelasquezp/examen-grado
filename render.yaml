@@ -30,7 +30,7 @@ services:
       - key: CORS_ORIGINS
         value: https://examen-web-ip7x.onrender.com
       - key: CONTENT_PATH
-        value: .
+        value: /app/content
       - key: APP_ENV
         value: production
 
