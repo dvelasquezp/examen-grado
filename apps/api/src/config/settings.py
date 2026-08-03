@@ -1,17 +1,27 @@
 """Configuración de la aplicación."""
 
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _clean_db_url(value: str) -> str:
-    return (
-        value.replace("&channel_binding=require", "")
-        .replace("?channel_binding=require&", "?")
-        .replace("?channel_binding=require", "")
-    )
+def _strip_query_params(url: str, params: set[str]) -> str:
+    """Quita parámetros de la query string conservando el resto de la URL."""
+    parsed = urlsplit(url)
+    kept = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True) if k not in params]
+    return urlunsplit(parsed._replace(query=urlencode(kept)))
+
+
+def _clean_async_db_url(value: str) -> str:
+    """asyncpg no acepta sslmode/channel_binding; el SSL se pasa en connect_args."""
+    return _strip_query_params(value, {"channel_binding", "sslmode"})
+
+
+def _clean_sync_db_url(value: str) -> str:
+    """psycopg2 sí entiende sslmode, pero no channel_binding."""
+    return _strip_query_params(value, {"channel_binding"})
 
 
 class Settings(BaseSettings):
@@ -57,12 +67,24 @@ class Settings(BaseSettings):
     embedding_enabled: bool = True
     chunk_max_chars: int = 3000
 
-    @field_validator("database_url", "database_url_sync", mode="before")
+    @field_validator("database_url", mode="before")
     @classmethod
-    def normalize_database_urls(cls, value: object) -> object:
+    def normalize_async_database_url(cls, value: object) -> object:
         if isinstance(value, str):
-            return _clean_db_url(value)
+            return _clean_async_db_url(value)
         return value
+
+    @field_validator("database_url_sync", mode="before")
+    @classmethod
+    def normalize_sync_database_url(cls, value: object) -> object:
+        if isinstance(value, str):
+            return _clean_sync_db_url(value)
+        return value
+
+    @property
+    def database_requires_ssl(self) -> bool:
+        host = urlsplit(self.database_url).hostname or ""
+        return host not in {"localhost", "127.0.0.1", "postgres", "db"}
 
     @property
     def exclude_dirs(self) -> set[str]:

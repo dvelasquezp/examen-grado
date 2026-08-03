@@ -8,9 +8,7 @@ from src.config.settings import get_settings
 
 settings = get_settings()
 
-_connect_args: dict = {}
-if "neon.tech" in settings.database_url or "sslmode=require" in settings.database_url:
-    _connect_args["ssl"] = True
+_connect_args: dict = {"ssl": True} if settings.database_requires_ssl else {}
 
 engine = create_async_engine(
     settings.database_url,
