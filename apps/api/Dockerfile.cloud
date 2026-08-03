@@ -21,8 +21,8 @@ COPY apps/api/docker-entrypoint.cloud.sh /app/docker-entrypoint.cloud.sh
 RUN chmod +x /app/docker-entrypoint.cloud.sh
 
 # Materiales jurídicos (solo lectura)
-COPY "Derecho Civil" /app/content/Derecho Civil
-COPY "Cedulario Examen de Grado.pdf" /app/content/Cedulario\ Examen\ de\ Grado.pdf
+COPY ["Derecho Civil", "/app/content/Derecho Civil"]
+COPY ["Cedulario Examen de Grado.pdf", "/app/content/Cedulario Examen de Grado.pdf"]
 # Seed: importar en Neon con scripts/import_seed_neon.sh (RESTORE_SEED=false)
 
 ENV CONTENT_PATH=/app/content
