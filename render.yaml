@@ -1,5 +1,9 @@
 # Blueprint Render — revisión en la nube
 # Guía paso a paso: docs/RENDER-ULTIMO-INTENTO.md
+#
+# Render añade un sufijo aleatorio a los hosts (examen-api-03dx...). Si borras
+# y recreas los servicios, actualiza CORS_ORIGINS y API_PROXY_TARGET con los
+# hosts que muestre el dashboard.
 
 services:
   - type: web
@@ -24,10 +28,7 @@ services:
       - key: EMBEDDING_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        fromService:
-          type: web
-          name: examen-web
-          property: host
+        value: https://examen-web-ip7x.onrender.com
       - key: CONTENT_PATH
         value: .
       - key: APP_ENV
@@ -43,7 +44,4 @@ services:
     healthCheckPath: /
     envVars:
       - key: API_PROXY_TARGET
-        fromService:
-          type: web
-          name: examen-api
-          property: host
+        value: https://examen-api-03dx.onrender.com
