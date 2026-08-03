@@ -278,9 +278,22 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
     },
   });
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    throw new Error(await errorMessage(res));
   }
   return res.json();
+}
+
+/** Prefiere el mensaje que envía la API; el código HTTP no le dice nada a quien estudia. */
+async function errorMessage(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    if (typeof body?.detail === "string" && body.detail) {
+      return body.detail;
+    }
+  } catch {
+    // Respuesta sin cuerpo JSON: nos quedamos con el código.
+  }
+  return `API error: ${res.status} ${res.statusText}`;
 }
 
 export const api = {
