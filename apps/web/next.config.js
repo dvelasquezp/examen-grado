@@ -4,7 +4,7 @@ function normalizeProxyTarget(raw) {
   if (value.startsWith("http://") || value.startsWith("https://")) {
     return value;
   }
-  return `http://${value}`;
+  return `https://${value}`;
 }
 
 const nextConfig = {

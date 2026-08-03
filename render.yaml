@@ -24,7 +24,10 @@ services:
       - key: EMBEDDING_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        value: https://examen-web.onrender.com
+        fromService:
+          type: web
+          name: examen-web
+          property: host
       - key: CONTENT_PATH
         value: .
       - key: APP_ENV
@@ -39,5 +42,8 @@ services:
     dockerContext: ./apps/web
     healthCheckPath: /
     envVars:
-      - key: NEXT_PUBLIC_API_URL
-        value: https://examen-api.onrender.com/api/v1
+      - key: API_PROXY_TARGET
+        fromService:
+          type: web
+          name: examen-api
+          property: host

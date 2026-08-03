@@ -59,22 +59,33 @@ postgresql://neondb_owner:TU_PASSWORD@ep-wild-haze-acsu5bsw.sa-east-1.aws.neon.t
 
 ---
 
-## Paso 4 — Probar en este orden
+## Paso 4 — Copiar las URLs REALES
+
+**No asumas** `examen-api.onrender.com`. Ese nombre puede estar ocupado por otra cuenta de Render, y entonces tus servicios reciben un sufijo (ej. `examen-api-a1b2.onrender.com`).
+
+1. Render → **examen-api** → copia la URL que aparece arriba
+2. Render → **examen-web** → copia su URL
+
+Usa **esas** URLs en las pruebas siguientes.
+
+---
+
+## Paso 5 — Probar en este orden
 
 ### A) API viva (sin base de datos)
 
 ```
-https://examen-api.onrender.com/healthz
+https://TU-URL-API.onrender.com/healthz
 ```
 
 Debe mostrar: `{"status":"ok"}`
 
-Si ves **"Cannot GET"** → el servicio **no es Docker/Python**. Vuelve al Paso 2.
+Si ves **"Cannot GET"** → estás mirando el servicio de otra persona, o el tuyo no arrancó. Revisa la URL real en el dashboard.
 
 ### B) API + Neon
 
 ```
-https://examen-api.onrender.com/health
+https://TU-URL-API.onrender.com/health
 ```
 
 Debe mostrar JSON con `"postgres": "ok"`.
@@ -84,16 +95,18 @@ Si `"postgres": "error"` → revisa las 2 variables en examen-api → Environmen
 ### C) Web
 
 ```
-https://examen-web.onrender.com
+https://TU-URL-WEB.onrender.com
 ```
 
 Primera carga puede tardar **~1 min** (plan free).
 
+La web habla con la API por un proxy interno (`API_PROXY_TARGET`), así que no hay que configurar URLs a mano.
+
 ---
 
-## Paso 5 — Enviar al experto
+## Paso 6 — Enviar al experto
 
-- URL: **https://examen-web.onrender.com**
+- URL: la de **examen-web** (la real del dashboard)
 - Adjunto: `dist/checklist-revision-experto.xlsx`
 
 ---
