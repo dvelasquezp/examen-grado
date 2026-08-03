@@ -1,9 +1,13 @@
 # Blueprint Render — revisión en la nube
 # Guía paso a paso: docs/DEPLOY-REVISION-NUBE.md
 #
+# Aquí sólo vive la API. La web está en Vercel, que no duerme ni consume las
+# 750 horas de instancia que Render reparte entre los servicios gratuitos: con
+# un único servicio, esa cuota alcanza para mantener la API despierta.
+#
 # Render añade un sufijo aleatorio a los hosts (examen-api-03dx...). Si borras
-# y recreas los servicios, actualiza CORS_ORIGINS y API_PROXY_TARGET con los
-# hosts que muestre el dashboard.
+# y recreas el servicio, actualiza API_PROXY_TARGET en Vercel con el host que
+# muestre el dashboard.
 
 services:
   - type: web
@@ -28,20 +32,8 @@ services:
       - key: EMBEDDING_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        value: https://examen-web-ip7x.onrender.com
+        value: https://examen-grado-five.vercel.app
       - key: CONTENT_PATH
         value: /app/content
       - key: APP_ENV
         value: production
-
-  - type: web
-    name: examen-web
-    runtime: docker
-    plan: free
-    region: oregon
-    dockerfilePath: ./apps/web/Dockerfile
-    dockerContext: ./apps/web
-    healthCheckPath: /
-    envVars:
-      - key: API_PROXY_TARGET
-        value: https://examen-api-03dx.onrender.com
