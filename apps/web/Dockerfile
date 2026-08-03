@@ -8,6 +8,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 3000
 ENV HOSTNAME=0.0.0.0
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["sh", "-c", "npm start -- -H 0.0.0.0 -p ${PORT:-3000}"]

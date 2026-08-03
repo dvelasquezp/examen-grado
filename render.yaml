@@ -19,6 +19,8 @@ services:
         sync: false
       - key: DATABASE_URL_SYNC
         sync: false
+      - key: DEBUG
+        value: "false"
       - key: NEO4J_URI
         value: bolt://localhost:7687
       - key: REDIS_URL
@@ -43,6 +45,7 @@ services:
     plan: free
     dockerfilePath: ./apps/web/Dockerfile
     dockerContext: ./apps/web
+    healthCheckPath: /
     envVars:
       - key: API_PROXY_TARGET
         fromService:
