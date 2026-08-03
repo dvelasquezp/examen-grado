@@ -26,10 +26,7 @@ services:
       - key: EMBEDDING_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        fromService:
-          type: web
-          name: examen-web
-          property: host
+        value: examen-web.onrender.com
       - key: CONTENT_PATH
         value: .
       - key: APP_ENV
@@ -40,7 +37,7 @@ services:
     runtime: node
     plan: free
     rootDir: apps/web
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start -- -H 0.0.0.0 -p $PORT
     healthCheckPath: /
     envVars:
@@ -51,5 +48,3 @@ services:
           type: web
           name: examen-api
           property: hostport
-      - key: NODE_ENV
-        value: production

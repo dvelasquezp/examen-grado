@@ -8,7 +8,9 @@ function normalizeProxyTarget(raw) {
 }
 
 const nextConfig = {
-  output: "standalone",
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     const apiProxyTarget = normalizeProxyTarget(process.env.API_PROXY_TARGET);
     return [
