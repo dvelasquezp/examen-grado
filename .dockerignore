@@ -1,0 +1,17 @@
+.git
+.github
+**/.venv
+**/node_modules
+**/.next
+**/dist
+dist
+data
+models
+.cache
+huggingface
+Derecho Civil
+*.pdf
+.env
+.env.*
+docs
+scripts

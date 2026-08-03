@@ -2,7 +2,16 @@
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _clean_db_url(value: str) -> str:
+    return (
+        value.replace("&channel_binding=require", "")
+        .replace("?channel_binding=require&", "?")
+        .replace("?channel_binding=require", "")
+    )
 
 
 class Settings(BaseSettings):
@@ -47,6 +56,13 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000,http://localhost:3001"
     embedding_enabled: bool = True
     chunk_max_chars: int = 3000
+
+    @field_validator("database_url", "database_url_sync", mode="before")
+    @classmethod
+    def normalize_database_urls(cls, value: object) -> object:
+        if isinstance(value, str):
+            return _clean_db_url(value)
+        return value
 
     @property
     def exclude_dirs(self) -> set[str]:

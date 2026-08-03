@@ -1,13 +1,15 @@
-# Blueprint Render — revisión en la nube (Docker)
+# Blueprint Render — revisión en la nube
+# Guía paso a paso: docs/RENDER-ULTIMO-INTENTO.md
 
 services:
   - type: web
     name: examen-api
     runtime: docker
     plan: free
+    region: oregon
     dockerfilePath: ./apps/api/Dockerfile.cloud
     dockerContext: .
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -22,7 +24,7 @@ services:
       - key: EMBEDDING_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        value: examen-web.onrender.com
+        value: https://examen-web.onrender.com
       - key: CONTENT_PATH
         value: .
       - key: APP_ENV
@@ -32,6 +34,7 @@ services:
     name: examen-web
     runtime: docker
     plan: free
+    region: oregon
     dockerfilePath: ./apps/web/Dockerfile
     dockerContext: ./apps/web
     healthCheckPath: /

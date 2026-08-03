@@ -13,6 +13,12 @@ from src.presentation.v1.schemas import HealthResponse, ModelInfoResponse
 router = APIRouter(tags=["Sistema"])
 
 
+@router.get("/healthz")
+async def liveness_probe():
+    """Probe simple para Render (sin dependencias externas)."""
+    return {"status": "ok"}
+
+
 @router.get("/health", response_model=HealthResponse)
 async def health_check(session: AsyncSession = Depends(get_db_session)):
     services: dict[str, str] = {}
