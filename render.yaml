@@ -1,5 +1,5 @@
 # Blueprint Render — revisión en la nube
-# Guía paso a paso: docs/RENDER-ULTIMO-INTENTO.md
+# Guía paso a paso: docs/DEPLOY-REVISION-NUBE.md
 #
 # Render añade un sufijo aleatorio a los hosts (examen-api-03dx...). Si borras
 # y recreas los servicios, actualiza CORS_ORIGINS y API_PROXY_TARGET con los

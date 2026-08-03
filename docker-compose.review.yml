@@ -77,8 +77,10 @@ services:
       context: ./apps/web
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_API_URL: ""
     container_name: examen-review-web
+    environment:
+      API_PROXY_TARGET: http://api:8000
     ports:
       - "3000:3000"
     depends_on:

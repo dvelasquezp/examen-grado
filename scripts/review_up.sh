@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "ERROR: Instala Docker Desktop desde https://www.docker.com/products/docker-desktop/"
