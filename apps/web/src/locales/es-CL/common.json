@@ -75,6 +75,9 @@
     "linkNotes": "Vincular Apuntes",
     "linkingNotes": "Vinculando Apuntes...",
     "linkNotesSuccess": "Vinculación completada",
+    "classifyAreas": "Clasificar por materia",
+    "classifying": "Clasificando...",
+    "classifySuccess": "Clasificación completada",
     "search": "Buscar",
     "searchPlaceholder": "Buscar concepto...",
     "empty": "No hay conceptos aún. Extrae primero desde Flashcards.",
@@ -138,7 +141,11 @@
     "easy": "Fácil",
     "easyHint": "De memoria. Intervalo más largo.",
     "done": "¡Repaso completado por hoy!",
-    "back": "Volver a la materia"
+    "doneCategory": "¡Repaso de esta categoría completado por hoy!",
+    "back": "Volver a la materia",
+    "category": "Categoría",
+    "allCategories": "Todas las materias",
+    "categoryHint": "Filtra el repaso por materia o repasa todas juntas."
   },
   "oralExam": {
     "title": "Simulacro oral",

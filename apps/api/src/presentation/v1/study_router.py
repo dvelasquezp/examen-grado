@@ -4,7 +4,7 @@ import asyncio
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,7 @@ from src.presentation.v1.study_schemas import (
     FillBlankCheckRequest,
     FillBlankCheckResponse,
     FillBlankExerciseResponse,
+    FlashcardCategoryResponse,
     FlashcardResponse,
     FlashcardReviewRequest,
     FlashcardReviewResponse,
@@ -50,10 +51,24 @@ async def subject_progress(slug: str, session: AsyncSession = Depends(get_db_ses
     return SubjectProgressResponse(**stats)
 
 
-@router.get("/subjects/{slug}/flashcards/next", response_model=FlashcardResponse | None)
-async def next_flashcard(slug: str, session: AsyncSession = Depends(get_db_session)):
+@router.get(
+    "/subjects/{slug}/flashcards/categories",
+    response_model=list[FlashcardCategoryResponse],
+)
+async def flashcard_categories(slug: str, session: AsyncSession = Depends(get_db_session)):
     subject = await _get_subject(session, slug)
-    concept = await ProgressService(session).get_next_flashcard(subject.id)
+    categories = await ProgressService(session).get_categories(subject.id)
+    return [FlashcardCategoryResponse(**category) for category in categories]
+
+
+@router.get("/subjects/{slug}/flashcards/next", response_model=FlashcardResponse | None)
+async def next_flashcard(
+    slug: str,
+    category: str | None = Query(default=None, description="Área del temario a repasar"),
+    session: AsyncSession = Depends(get_db_session),
+):
+    subject = await _get_subject(session, slug)
+    concept = await ProgressService(session).get_next_flashcard(subject.id, category)
     if not concept:
         return None
     return FlashcardResponse(

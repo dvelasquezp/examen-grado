@@ -54,9 +54,22 @@ class ProgressService:
             "streak_days": 1 if progress else 0,
         }
 
-    async def get_next_flashcard(self, subject_id: UUID) -> ConceptModel | None:
-        now = datetime.now(UTC)
+    async def get_categories(self, subject_id: UUID) -> list[dict]:
+        """Áreas del temario con tarjetas disponibles, en orden alfabético."""
         result = await self.session.execute(
+            select(ConceptModel.subtopic, func.count(ConceptModel.id))
+            .where(ConceptModel.subject_id == subject_id)
+            .where(ConceptModel.subtopic.is_not(None))
+            .group_by(ConceptModel.subtopic)
+            .order_by(ConceptModel.subtopic)
+        )
+        return [{"name": name, "concept_count": count} for name, count in result.all()]
+
+    async def get_next_flashcard(
+        self, subject_id: UUID, category: str | None = None
+    ) -> ConceptModel | None:
+        now = datetime.now(UTC)
+        query = (
             select(ConceptModel)
             .outerjoin(UserConceptProgressModel, UserConceptProgressModel.concept_id == ConceptModel.id)
             .where(ConceptModel.subject_id == subject_id)
@@ -65,8 +78,14 @@ class ProgressService:
                 | (UserConceptProgressModel.next_review_at.is_(None))
                 | (UserConceptProgressModel.next_review_at <= now)
             )
-            .order_by(UserConceptProgressModel.next_review_at.nulls_first(), ConceptModel.title)
-            .limit(1)
+        )
+        if category:
+            query = query.where(ConceptModel.subtopic == category)
+
+        result = await self.session.execute(
+            query.order_by(
+                UserConceptProgressModel.next_review_at.nulls_first(), ConceptModel.title
+            ).limit(1)
         )
         return result.scalar_one_or_none()
 
@@ -77,7 +96,16 @@ class ProgressService:
         )
         prog = result.scalar_one_or_none()
         if not prog:
-            prog = UserConceptProgressModel(concept_id=concept_id)
+            # Los valores por defecto de las columnas sólo se aplican al
+            # insertar, y el cálculo de abajo ocurre antes: sin esto, la primera
+            # calificación de una tarjeta operaría sobre None.
+            prog = UserConceptProgressModel(
+                concept_id=concept_id,
+                ease_factor=2.5,
+                interval_days=0,
+                repetitions=0,
+                mastery_score=0.0,
+            )
             self.session.add(prog)
 
         q = max(0, min(5, quality))
@@ -94,7 +122,7 @@ class ProgressService:
             prog.repetitions += 1
             prog.ease_factor = max(1.3, prog.ease_factor + 0.1 - (5 - q) * 0.08)
 
-        prog.mastery_score = min(1.0, prog.mastery_score + (q - 2) * 0.08)
+        prog.mastery_score = min(1.0, max(0.0, prog.mastery_score + (q - 2) * 0.08))
         prog.last_reviewed_at = datetime.now(UTC)
         prog.next_review_at = datetime.now(UTC) + timedelta(days=prog.interval_days)
         prog.updated_at = datetime.now(UTC)

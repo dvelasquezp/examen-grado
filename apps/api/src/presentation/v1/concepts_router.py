@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.knowledge.classify_areas import ClassifyAreasUseCase
 from src.application.knowledge.extract_concepts import ExtractConceptsUseCase
 from src.application.knowledge.link_notes import LinkNotesUseCase
 from src.application.knowledge.reset_concepts import ResetConceptsUseCase
@@ -13,6 +14,7 @@ from src.infrastructure.persistence.postgres.concept_repository import ConceptRe
 from src.infrastructure.persistence.postgres.database import get_db_session
 from src.infrastructure.persistence.postgres.models import SubjectModel
 from src.presentation.v1.knowledge_schemas import (
+    ClassifyAreasResponse,
     ConceptDefinitionResponse,
     ConceptDetailResponse,
     ConceptNoteReferenceResponse,
@@ -81,6 +83,26 @@ async def link_notes_to_concepts(
         links_found=result.links_found,
         links_created=result.links_created,
         links_skipped=result.links_skipped,
+    )
+
+
+@router.post(
+    "/subjects/{slug}/concepts/classify-areas", response_model=ClassifyAreasResponse
+)
+async def classify_concept_areas(
+    slug: str,
+    session: AsyncSession = Depends(get_db_session),
+):
+    try:
+        result = await ClassifyAreasUseCase(session).execute(slug)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return ClassifyAreasResponse(
+        subject_slug=result.subject_slug,
+        concepts_total=result.concepts_total,
+        with_evidence=result.with_evidence,
+        unassigned=result.unassigned,
+        areas=result.areas,
     )
 
 

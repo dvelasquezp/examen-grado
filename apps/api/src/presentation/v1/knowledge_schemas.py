@@ -104,6 +104,14 @@ class LinkNotesResponse(BaseModel):
     links_skipped: int
 
 
+class ClassifyAreasResponse(BaseModel):
+    subject_slug: str
+    concepts_total: int
+    with_evidence: int
+    unassigned: int
+    areas: dict[str, int]
+
+
 class ResetConceptsResponse(BaseModel):
     subject_slug: str
     concepts_deleted: int

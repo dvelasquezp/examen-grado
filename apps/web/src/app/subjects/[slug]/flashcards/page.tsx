@@ -3,25 +3,38 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { api, type FlashcardItem } from "@/lib/api-client";
+import { api, type FlashcardCategory, type FlashcardItem } from "@/lib/api-client";
 import es from "@/locales/es-CL/common.json";
+
+const ALL_CATEGORIES = "";
 
 export default function FlashcardsPage() {
   const params = useParams();
   const slug = params.slug as string;
   const [card, setCard] = useState<FlashcardItem | null>(null);
+  const [categories, setCategories] = useState<FlashcardCategory[]>([]);
+  const [category, setCategory] = useState<string>(ALL_CATEGORIES);
   const [showAnswer, setShowAnswer] = useState(false);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    // El filtro es opcional: si no se pueden cargar las categorías el repaso
+    // general debe seguir funcionando.
+    api
+      .flashcardCategories(slug)
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, [slug]);
+
   const loadNext = useCallback(async () => {
     setLoading(true);
     setError(null);
     setShowAnswer(false);
     try {
-      const next = await api.nextFlashcard(slug);
+      const next = await api.nextFlashcard(slug, category || undefined);
       if (!next) {
         setDone(true);
         setCard(null);
@@ -34,7 +47,7 @@ export default function FlashcardsPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, category]);
 
   useEffect(() => {
     loadNext();
@@ -67,6 +80,32 @@ export default function FlashcardsPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-6 py-8">
+        {categories.length > 0 && (
+          <div className="mb-6 p-4 bg-white rounded-xl border">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700"
+            >
+              {t.category}
+            </label>
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              disabled={submitting}
+              className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
+            >
+              <option value={ALL_CATEGORIES}>{t.allCategories}</option>
+              {categories.map((item) => (
+                <option key={item.name} value={item.name}>
+                  {item.name} ({item.concept_count})
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs text-gray-500">{t.categoryHint}</p>
+          </div>
+        )}
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
@@ -77,7 +116,9 @@ export default function FlashcardsPage() {
 
         {!loading && done && (
           <div className="text-center p-8 bg-white rounded-xl border">
-            <p className="text-lg font-semibold text-primary">{t.done}</p>
+            <p className="text-lg font-semibold text-primary">
+              {category ? t.doneCategory : t.done}
+            </p>
             <button
               onClick={loadNext}
               className="mt-4 px-4 py-2 bg-primary text-white rounded-lg"

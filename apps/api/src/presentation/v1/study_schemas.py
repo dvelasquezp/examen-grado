@@ -24,6 +24,11 @@ class FlashcardResponse(BaseModel):
     subtopic: str | None
 
 
+class FlashcardCategoryResponse(BaseModel):
+    name: str
+    concept_count: int
+
+
 class FlashcardReviewRequest(BaseModel):
     quality: int = Field(ge=0, le=5, description="0=olvidé, 3=bien, 5=fácil")
 

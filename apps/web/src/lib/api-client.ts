@@ -127,6 +127,14 @@ export interface LinkNotesResult {
   links_skipped: number;
 }
 
+export interface ClassifyAreasResult {
+  subject_slug: string;
+  concepts_total: number;
+  with_evidence: number;
+  unassigned: number;
+  areas: Record<string, number>;
+}
+
 export interface ConceptNoteReference {
   chunk_id: string;
   document_id: string | null;
@@ -178,6 +186,11 @@ export interface FlashcardItem {
   slug: string;
   definition: string | null;
   subtopic: string | null;
+}
+
+export interface FlashcardCategory {
+  name: string;
+  concept_count: number;
 }
 
 export interface OralExamState {
@@ -286,6 +299,10 @@ export const api = {
     fetchApi<ExtractConceptsResult>(`/subjects/${slug}/concepts/extract`, { method: "POST" }),
   linkNotes: (slug: string) =>
     fetchApi<LinkNotesResult>(`/subjects/${slug}/concepts/link-notes`, { method: "POST" }),
+  classifyAreas: (slug: string) =>
+    fetchApi<ClassifyAreasResult>(`/subjects/${slug}/concepts/classify-areas`, {
+      method: "POST",
+    }),
   concepts: (slug: string, q?: string) =>
     fetchApi<ConceptSummary[]>(
       `/subjects/${slug}/concepts${q ? `?q=${encodeURIComponent(q)}` : ""}`
@@ -300,8 +317,14 @@ export const api = {
       `/search?q=${encodeURIComponent(q)}${subject ? `&subject=${subject}` : ""}`
     ),
   progress: (slug: string) => fetchApi<SubjectProgress>(`/subjects/${slug}/progress`),
-  nextFlashcard: (slug: string) =>
-    fetchApi<FlashcardItem | null>(`/subjects/${slug}/flashcards/next`),
+  flashcardCategories: (slug: string) =>
+    fetchApi<FlashcardCategory[]>(`/subjects/${slug}/flashcards/categories`),
+  nextFlashcard: (slug: string, category?: string) =>
+    fetchApi<FlashcardItem | null>(
+      `/subjects/${slug}/flashcards/next${
+        category ? `?category=${encodeURIComponent(category)}` : ""
+      }`
+    ),
   reviewFlashcard: (slug: string, conceptId: string, quality: number) =>
     fetchApi<{ concept_id: string; mastery_score: number; next_review_days: number }>(
       `/subjects/${slug}/flashcards/${conceptId}/review`,
