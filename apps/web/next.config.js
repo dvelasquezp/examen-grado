@@ -7,11 +7,10 @@ function normalizeProxyTarget(raw) {
   return `http://${value}`;
 }
 
-const apiProxyTarget = normalizeProxyTarget(process.env.API_PROXY_TARGET);
-
 const nextConfig = {
   output: "standalone",
   async rewrites() {
+    const apiProxyTarget = normalizeProxyTarget(process.env.API_PROXY_TARGET);
     return [
       {
         source: "/api/v1/:path*",

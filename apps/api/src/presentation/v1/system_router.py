@@ -29,9 +29,9 @@ async def health_check(session: AsyncSession = Depends(get_db_session)):
     except Exception as e:
         services["neo4j"] = f"error: {e}"
 
-    all_ok = all(v == "ok" for v in services.values())
+    postgres_ok = services.get("postgres") == "ok"
     return HealthResponse(
-        status="ok" if all_ok else "degraded",
+        status="ok" if postgres_ok else "degraded",
         services=services,
     )
 

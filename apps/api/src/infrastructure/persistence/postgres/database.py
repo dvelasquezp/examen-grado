@@ -8,10 +8,15 @@ from src.config.settings import get_settings
 
 settings = get_settings()
 
+_connect_args: dict = {}
+if "neon.tech" in settings.database_url or "sslmode=require" in settings.database_url:
+    _connect_args["ssl"] = True
+
 engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,
     pool_pre_ping=True,
+    connect_args=_connect_args,
 )
 
 async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
