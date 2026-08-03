@@ -90,9 +90,9 @@ Configuración usada, con un servicio gratuito tipo [cron-job.org](https://cron-
 |--------|-------|
 | URL | `https://examen-api-03dx.onrender.com/healthz` |
 | Intervalo | cada 10 min (Render duerme a los 15) |
-| Franja | 06:00–03:59, hora de Chile |
+| Horario | todas las horas salvo 03:00 y 04:00, hora de Chile |
 
-Son ~682 horas al mes, con holgura. La API sólo duerme entre las 04:00 y las 06:00; si alguien entra en esa franja, espera el minuto de arranque una sola vez.
+Son ~682 horas al mes, con holgura. La API sólo duerme entre las 03:00 y las 05:00; si alguien entra en esa franja, espera el minuto de arranque una sola vez.
 
 `/healthz` no toca la base de datos, así que el ping no despierta el cómputo de Neon sin necesidad.
 
