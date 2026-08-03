@@ -1,0 +1,32 @@
+REVISIÓN — EXAMEN DE GRADO ORAL (U. de Chile)
+=============================================
+
+REQUISITO ÚNICO
+  Docker Desktop (gratis): https://www.docker.com/products/docker-desktop/
+  No necesitas instalar Python, Node ni PostgreSQL.
+
+ARRANQUE RÁPIDO
+  Windows: doble clic en Iniciar-Revision.bat
+  Mac/Linux: ./iniciar-revision.sh
+
+  Luego abre el navegador en: http://localhost:3000
+
+CHECKLIST
+  Abre checklist-revision-experto.xlsx y completa las hojas.
+
+CONTENIDO
+  - Derecho Civil (materiales de estudio)
+  - App con flashcards, juegos y simulacro oral
+  - Base de datos precargada (si el paquete incluye data/review-seed.sql)
+
+DETENER
+  En terminal, desde esta carpeta:
+  docker compose -f docker-compose.review.yml down
+
+PROBLEMAS FRECUENTES
+  - "Docker no está corriendo": abre Docker Desktop y espera a que inicie.
+  - Puerto 3000 ocupado: cierra otra app en ese puerto o avisa al remitente.
+  - Primera carga lenta: es normal; Docker descarga imágenes y compila.
+
+CONTACTO
+  [Tu nombre / email aquí]

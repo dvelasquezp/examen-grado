@@ -1,0 +1,53 @@
+# Blueprint Render — revisión en la nube (sin Docker en PC del experto)
+# https://render.com/docs/blueprint-spec
+#
+# Antes de desplegar:
+# 1. Crea proyecto en Neon (https://neon.tech) con extensión pgvector
+# 2. Importa data/review-seed.sql en Neon (ver docs/DEPLOY-REVISION-NUBE.md)
+# 3. Conecta este repo en Render → New → Blueprint
+
+services:
+  - type: web
+    name: examen-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/api/Dockerfile.cloud
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_SYNC
+        sync: false
+      - key: NEO4J_URI
+        value: bolt://localhost:7687
+      - key: REDIS_URL
+        value: redis://localhost:6379/0
+      - key: EMBEDDING_ENABLED
+        value: "false"
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: examen-web
+          property: host
+      - key: CONTENT_PATH
+        value: /app/content
+      - key: RESTORE_SEED
+        value: "false"
+      - key: APP_ENV
+        value: production
+
+  - type: web
+    name: examen-web
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web
+    envVars:
+      - key: API_PROXY_TARGET
+        fromService:
+          type: web
+          name: examen-api
+          property: hostport
+      - key: NODE_ENV
+        value: production

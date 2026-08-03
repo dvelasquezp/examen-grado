@@ -1,0 +1,192 @@
+{
+  "common": {
+    "appName": "Examen de Grado",
+    "loading": "Cargando...",
+    "error": "Ha ocurrido un error",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "dashboard": {
+    "title": "Tu preparación",
+    "retention": "Retención",
+    "streak": "Racha de estudio",
+    "subjects": "Materias",
+    "pendingReview": "Repaso pendiente",
+    "flashcardsToday": "flashcards hoy",
+    "weakConcepts": "conceptos débiles",
+    "startReview": "Empezar repaso",
+    "quickActions": "Acciones rápidas",
+    "oralExam": "Simulacro Oral",
+    "conceptMap": "Mapa Conceptual",
+    "games": "Juegos",
+    "comingSoon": "próximamente"
+  },
+  "maintenance": {
+    "title": "Mantenimiento",
+    "discover": "Descubrir materias",
+    "discovering": "Escaneando...",
+    "status": "Estado del sistema",
+    "documents": "Documentos",
+    "subjects": "Materias",
+    "contentPath": "Ruta de contenido",
+    "discoverSuccess": "Descubrimiento completado"
+  },
+  "ingestion": {
+    "title": "Ingesta de documentos",
+    "ingestPending": "Ingestar pendientes",
+    "ingesting": "Ingiriendo documentos...",
+    "ingestSuccess": "Ingesta completada",
+    "completed": "completados",
+    "failed": "fallidos",
+    "skipped": "omitidos",
+    "chunks": "chunks",
+    "pages": "páginas"
+  },
+  "documents": {
+    "types": {
+      "OFFICIAL_SYLLABUS": "Cedulario oficial",
+      "FLASHCARDS": "Flashcards",
+      "LECTURE_NOTES": "Apuntes",
+      "EXAM_GUIDE": "Guía de examen"
+    },
+    "roles": {
+      "DOCTRINE": "Doctrina",
+      "EXAM_PATTERN_ONLY": "Solo patrones de examen"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "processing": "Procesando",
+      "completed": "Completado",
+      "failed": "Error"
+    }
+  },
+  "provenance": {
+    "extractedFlashcards": "Definición extraída de Flashcards PDF",
+    "extractedNotes": "Explicación extraída de Apuntes",
+    "linkedNotes": "Mención en Apuntes",
+    "generatedAi": "Generado por IA",
+    "examPattern": "Patrón de examen oral histórico"
+  },
+  "concepts": {
+    "title": "Conceptos jurídicos",
+    "extract": "Extraer desde Flashcards",
+    "extracting": "Extrayendo...",
+    "extractSuccess": "Extracción completada",
+    "linkNotes": "Vincular Apuntes",
+    "linkingNotes": "Vinculando Apuntes...",
+    "linkNotesSuccess": "Vinculación completada",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar concepto...",
+    "empty": "No hay conceptos aún. Extrae primero desde Flashcards.",
+    "count": "conceptos",
+    "backToList": "Volver a conceptos",
+    "definition": "Definición",
+    "alternativeDefinitions": "Definiciones alternativas",
+    "metadata": "Información",
+    "confidence": "Confianza",
+    "difficulty": "Dificultad",
+    "sources": "Fuentes",
+    "noteReferences": "Referencias en Apuntes",
+    "browse": "Explorar conceptos"
+  },
+  "sources": {
+    "openInApp": "Ver en apunte",
+    "backToConcept": "Volver al concepto",
+    "lectureNotes": "Apunte",
+    "page": "pág.",
+    "matchExcerpt": "Fragmento donde aparece el concepto",
+    "fullPassage": "Texto completo del fragmento",
+    "showingTop": "Mostrando las"
+  },
+  "subjectHub": {
+    "title": "Materia",
+    "back": "Volver al inicio",
+    "concepts": "Conceptos",
+    "conceptsDesc": "Catálogo canónico desde Flashcards",
+    "search": "Búsqueda",
+    "searchDesc": "Buscar conceptos y apuntes",
+    "flashcards": "Repaso",
+    "flashcardsDesc": "Flashcards con repetición espaciada",
+    "oralExam": "Simulacro oral",
+    "oralExamDesc": "Preguntas tipo examen (texto)",
+    "graph": "Mapa conceptual",
+    "graphDesc": "Relaciones entre conceptos en Apuntes",
+    "matchingGame": "Juego: emparejar",
+    "matchingDesc": "Une concepto con definición",
+    "fillBlankGame": "Completar concepto",
+    "fillBlankDesc": "Oraciones de Apuntes con espacio en blanco",
+    "logicGame": "Lógica proposicional",
+    "logicDesc": "Operadores lógicos entre conceptos",
+    "draftNotice": "Las preguntas y evaluaciones son borradores para revisión con experto."
+  },
+  "search": {
+    "title": "Búsqueda",
+    "placeholder": "Buscar en conceptos y apuntes...",
+    "concepts": "Conceptos",
+    "chunks": "Fragmentos de apuntes",
+    "noResults": "Sin resultados"
+  },
+  "flashcards": {
+    "title": "Repaso",
+    "showAnswer": "Mostrar definición",
+    "again": "Olvidé",
+    "againHint": "No la sabía. Vuelve en ~1 día.",
+    "hard": "Difícil",
+    "hardHint": "Con dudas. Repaso pronto (~1 día).",
+    "good": "Bien",
+    "goodHint": "Correcta. Próximo repaso más tarde.",
+    "easy": "Fácil",
+    "easyHint": "De memoria. Intervalo más largo.",
+    "done": "¡Repaso completado por hoy!",
+    "back": "Volver a la materia"
+  },
+  "oralExam": {
+    "title": "Simulacro oral",
+    "start": "Iniciar simulacro",
+    "yourAnswer": "Tu respuesta",
+    "submit": "Enviar respuesta",
+    "hint": "Pista (definición canónica)",
+    "feedback": "Retroalimentación",
+    "finished": "Simulacro finalizado",
+    "score": "Cobertura",
+    "next": "Siguiente pregunta",
+    "modeAudio": "Grabar audio",
+    "modeText": "Escribir",
+    "audioInstructions": "Graba tu respuesta oral, escúchala y transcribe a texto antes de enviar.",
+    "recordStart": "Iniciar grabación",
+    "recordStop": "Detener grabación",
+    "transcribe": "Transcribir a texto",
+    "transcribing": "Transcribiendo…",
+    "answerPlaceholderAudio": "La transcripción aparecerá aquí. Puedes editarla antes de enviar.",
+    "answerPlaceholderText": "Escribe tu respuesta oral aquí..."
+  },
+  "graph": {
+    "title": "Mapa conceptual",
+    "nodes": "conceptos",
+    "edges": "relaciones",
+    "coOccurs": "Aparecen juntos en Apuntes",
+    "empty": "Vincula Apuntes primero para ver relaciones"
+  },
+  "games": {
+    "matchingTitle": "Emparejar conceptos",
+    "selectDefinition": "Selecciona la definición correcta",
+    "correct": "¡Correcto!",
+    "wrong": "Incorrecto, intenta de nuevo",
+    "score": "Puntaje",
+    "playAgain": "Jugar de nuevo",
+    "fillBlankTitle": "Completar concepto",
+    "fillBlankLabel": "Escribe el concepto que falta",
+    "fillBlankPlaceholder": "Ej.: Aceptación",
+    "fillBlankCheck": "Comprobar",
+    "fillBlankNext": "Siguiente",
+    "fillBlankDone": "¡Ejercicios completados!",
+    "fillBlankExpected": "Respuesta correcta",
+    "fillBlankEmpty": "No hay oraciones disponibles. Vincula Apuntes primero.",
+    "logicTitle": "Lógica proposicional",
+    "logicNotice": "Ejercicios en lenguaje natural basados en fragmentos de tus Apuntes. Lee el contexto, razona la relación lógica y elige la respuesta más precisa.",
+    "logicContext": "Contexto del apunte",
+    "logicConcepts": "Conceptos en juego",
+    "logicWhy": "Por qué",
+    "logicNext": "Siguiente ejercicio"
+  }
+}
