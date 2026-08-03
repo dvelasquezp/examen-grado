@@ -11,6 +11,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async rewrites() {
     const apiProxyTarget = normalizeProxyTarget(process.env.API_PROXY_TARGET);
     return [

@@ -1,18 +1,14 @@
-# Blueprint Render — revisión en la nube
-# Tras cambiar este archivo: borra los servicios viejos en Render y vuelve a aplicar el Blueprint.
+# Blueprint Render — revisión en la nube (Docker)
 
 services:
   - type: web
     name: examen-api
-    runtime: python
+    runtime: docker
     plan: free
-    rootDir: apps/api
-    buildCommand: pip install --upgrade pip && pip install .
-    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./apps/api/Dockerfile.cloud
+    dockerContext: .
     healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.12.4"
       - key: DATABASE_URL
         sync: false
       - key: DATABASE_URL_SYNC
@@ -34,17 +30,11 @@ services:
 
   - type: web
     name: examen-web
-    runtime: node
+    runtime: docker
     plan: free
-    rootDir: apps/web
-    buildCommand: npm install --include=dev && npm run build
-    startCommand: npm start -- -H 0.0.0.0 -p $PORT
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web
     healthCheckPath: /
     envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: API_PROXY_TARGET
-        fromService:
-          type: web
-          name: examen-api
-          property: hostport
+      - key: NEXT_PUBLIC_API_URL
+        value: https://examen-api.onrender.com/api/v1
