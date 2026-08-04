@@ -135,6 +135,17 @@ export interface ClassifyAreasResult {
   areas: Record<string, number>;
 }
 
+export interface EnrichDefinitionsResult {
+  subject_slug: string;
+  concepts_total: number;
+  memorizador_path: string;
+  entries_scanned: number;
+  enriched: number;
+  titles_fixed: number;
+  unchanged: number;
+  examples: string[];
+}
+
 export interface ConceptNoteReference {
   chunk_id: string;
   document_id: string | null;
@@ -314,6 +325,10 @@ export const api = {
     fetchApi<LinkNotesResult>(`/subjects/${slug}/concepts/link-notes`, { method: "POST" }),
   classifyAreas: (slug: string) =>
     fetchApi<ClassifyAreasResult>(`/subjects/${slug}/concepts/classify-areas`, {
+      method: "POST",
+    }),
+  enrichDefinitions: (slug: string) =>
+    fetchApi<EnrichDefinitionsResult>(`/subjects/${slug}/concepts/enrich-definitions`, {
       method: "POST",
     }),
   concepts: (slug: string, q?: string) =>

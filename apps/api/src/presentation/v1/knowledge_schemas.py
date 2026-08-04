@@ -112,6 +112,17 @@ class ClassifyAreasResponse(BaseModel):
     areas: dict[str, int]
 
 
+class EnrichDefinitionsResponse(BaseModel):
+    subject_slug: str
+    concepts_total: int
+    memorizador_path: str
+    entries_scanned: int
+    enriched: int
+    titles_fixed: int
+    unchanged: int
+    examples: list[str]
+
+
 class ResetConceptsResponse(BaseModel):
     subject_slug: str
     concepts_deleted: int

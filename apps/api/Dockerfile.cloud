@@ -15,10 +15,10 @@ RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
 
 COPY apps/api/src ./src/
 
-# Directorio vacío: los materiales ya están ingestados en la base de datos.
-# Apuntar CONTENT_PATH a /app haría que el descubrimiento tomara src/ y
-# alembic/ como si fueran materias.
-RUN mkdir -p /app/content
+# Materiales mínimos en disco: la ingesta vive en Neon, pero el enriquecimiento
+# de definiciones lee MEMORIZADOR CIVIL.pdf (texto nativo, sin OCR).
+RUN mkdir -p "/app/content/DERECHO CIVIL 2"
+COPY ["DERECHO CIVIL 2/MEMORIZADOR CIVIL.pdf", "/app/content/DERECHO CIVIL 2/MEMORIZADOR CIVIL.pdf"]
 
 ENV CONTENT_PATH=/app/content
 ENV APP_ENV=production

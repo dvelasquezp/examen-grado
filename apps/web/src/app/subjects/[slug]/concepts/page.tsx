@@ -15,9 +15,11 @@ export default function ConceptsPage() {
   const [extracting, setExtracting] = useState(false);
   const [linking, setLinking] = useState(false);
   const [classifying, setClassifying] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [extractResult, setExtractResult] = useState<string | null>(null);
   const [linkResult, setLinkResult] = useState<string | null>(null);
   const [classifyResult, setClassifyResult] = useState<string | null>(null);
+  const [enrichResult, setEnrichResult] = useState<string | null>(null);
   const [q, setQ] = useState(searchParams.get("q") || "");
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +91,25 @@ export default function ConceptsPage() {
     }
   }
 
+  async function handleEnrichDefinitions() {
+    setEnriching(true);
+    setError(null);
+    try {
+      const result = await api.enrichDefinitions(slug);
+      const sample = result.examples.length > 0 ? ` Ej.: ${result.examples[0]}` : "";
+      const titles =
+        result.titles_fixed > 0 ? ` ${result.titles_fixed} títulos OCR corregidos.` : "";
+      setEnrichResult(
+        `${result.enriched} de ${result.concepts_total} definiciones corregidas desde Memorizador.${titles}${sample}`
+      );
+      await loadConcepts(q || undefined);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : es.common.error);
+    } finally {
+      setEnriching(false);
+    }
+  }
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     loadConcepts(q || undefined);
@@ -137,11 +158,19 @@ export default function ConceptsPage() {
           </button>
           <button
             onClick={handleClassifyAreas}
-            disabled={classifying || linking || extracting || concepts.length === 0}
+            disabled={classifying || linking || extracting || enriching || concepts.length === 0}
             className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
             title={concepts.length === 0 ? es.concepts.empty : undefined}
           >
             {classifying ? es.concepts.classifying : es.concepts.classifyAreas}
+          </button>
+          <button
+            onClick={handleEnrichDefinitions}
+            disabled={enriching || linking || extracting || classifying || concepts.length === 0}
+            className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
+            title={concepts.length === 0 ? es.concepts.empty : undefined}
+          >
+            {enriching ? es.concepts.enrichingDefinitions : es.concepts.enrichDefinitions}
           </button>
         </div>
 
@@ -160,6 +189,12 @@ export default function ConceptsPage() {
         {classifyResult && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
             {es.concepts.classifySuccess}: {classifyResult}
+          </div>
+        )}
+
+        {enrichResult && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+            {es.concepts.enrichDefinitionsSuccess}: {enrichResult}
           </div>
         )}
 
