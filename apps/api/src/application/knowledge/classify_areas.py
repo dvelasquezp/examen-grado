@@ -57,7 +57,7 @@ class ClassifyAreasUseCase:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def execute(self, subject_slug: str) -> ClassifyAreasResult:
+    async def execute(self, subject_slug: str, *, force: bool = False) -> ClassifyAreasResult:
         subject = await self._get_subject(subject_slug)
         if not subject:
             raise ValueError(f"Materia no encontrada: {subject_slug}")
@@ -69,6 +69,7 @@ class ClassifyAreasUseCase:
             )
 
         concepts = await self._get_concepts(subject.id)
+        existing_subtopics = await self._existing_subtopics(concepts)
         mentions = await self._mentions_per_document(subject.id)
         sizes = await self._document_sizes(subject.id)
         order = await self._deck_order(subject.id)
@@ -95,14 +96,17 @@ class ClassifyAreasUseCase:
                 evidence[concept_id].items(), key=lambda item: item[1]
             )[0]
 
-        await self._persist(concepts, assignments)
+        await self._persist(concepts, assignments, existing_subtopics, force=force)
 
-        counts = Counter(area.name for area in assignments.values())
+        # Contar categorías finales en BD (incluye las que se preservaron del Excel).
+        final_topics = await self._existing_subtopics(concepts)
+        counts = Counter(name for name in final_topics.values() if name)
+        unassigned = sum(1 for concept_id in concepts if not final_topics.get(concept_id))
         return ClassifyAreasResult(
             subject_slug=subject_slug,
             concepts_total=len(concepts),
             with_evidence=sum(1 for shares in evidence.values() if shares),
-            unassigned=len(concepts) - len(assignments),
+            unassigned=unassigned,
             areas=dict(counts.most_common()),
         )
 
@@ -234,13 +238,32 @@ class ClassifyAreasUseCase:
             order.setdefault(concept_id, (page_number, chunk_index or 0))
         return order
 
+    async def _existing_subtopics(self, concept_ids: list[UUID]) -> dict[UUID, str | None]:
+        if not concept_ids:
+            return {}
+        result = await self.session.execute(
+            select(ConceptModel.id, ConceptModel.subtopic).where(
+                ConceptModel.id.in_(concept_ids)
+            )
+        )
+        return {row.id: row.subtopic for row in result.all()}
+
     async def _persist(
-        self, concepts: list[UUID], assignments: dict[UUID, SubjectArea]
+        self,
+        concepts: list[UUID],
+        assignments: dict[UUID, SubjectArea],
+        existing_subtopics: dict[UUID, str | None],
+        *,
+        force: bool,
     ) -> None:
         result = await self.session.execute(
             select(ConceptModel).where(ConceptModel.id.in_(concepts))
         )
         for model in result.scalars().all():
+            # No pisar categorías canónicas (Excel) salvo force=true.
+            if not force and existing_subtopics.get(model.id):
+                continue
             area = assignments.get(model.id)
-            model.subtopic = area.name if area else None
+            if area:
+                model.subtopic = area.name
         await self.session.flush()

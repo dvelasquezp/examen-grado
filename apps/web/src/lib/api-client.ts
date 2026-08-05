@@ -349,10 +349,34 @@ export const api = {
     fetchApi<EnrichDefinitionsResult>(`/subjects/${slug}/concepts/enrich-definitions`, {
       method: "POST",
     }),
-  concepts: (slug: string, q?: string) =>
-    fetchApi<ConceptSummary[]>(
-      `/subjects/${slug}/concepts${q ? `?q=${encodeURIComponent(q)}` : ""}`
-    ),
+  concepts: (slug: string, q?: string, limit = 500) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    params.set("limit", String(limit));
+    return fetchApi<ConceptSummary[]>(`/subjects/${slug}/concepts?${params}`);
+  },
+  importExcelDefinitions: async (slug: string, file: File, pruneMissing = true) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(
+      `${API_URL}/subjects/${slug}/concepts/import-excel?create_missing=true&prune_missing=${pruneMissing}`,
+      { method: "POST", body: form }
+    );
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(detail || `API error: ${res.status}`);
+    }
+    return res.json() as Promise<{
+      subject_slug: string;
+      excel_rows: number;
+      updated: number;
+      created: number;
+      unchanged: number;
+      unmatched: number;
+      pruned: number;
+      examples: string[];
+    }>;
+  },
   concept: (id: string) => fetchApi<ConceptDetail>(`/concepts/${id}`),
   chunk: (chunkId: string, conceptId?: string) =>
     fetchApi<ChunkDetail>(

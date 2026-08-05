@@ -16,10 +16,12 @@ export default function ConceptsPage() {
   const [linking, setLinking] = useState(false);
   const [classifying, setClassifying] = useState(false);
   const [enriching, setEnriching] = useState(false);
+  const [importingExcel, setImportingExcel] = useState(false);
   const [extractResult, setExtractResult] = useState<string | null>(null);
   const [linkResult, setLinkResult] = useState<string | null>(null);
   const [classifyResult, setClassifyResult] = useState<string | null>(null);
   const [enrichResult, setEnrichResult] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<string | null>(null);
   const [q, setQ] = useState(searchParams.get("q") || "");
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +93,25 @@ export default function ConceptsPage() {
     }
   }
 
+  async function handleImportExcel(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setImportingExcel(true);
+    setError(null);
+    try {
+      const result = await api.importExcelDefinitions(slug, file, true);
+      setImportResult(
+        `${result.updated} actualizados, ${result.created} nuevos, ${result.pruned} eliminados (${result.excel_rows} filas)`
+      );
+      await loadConcepts(q || undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : es.common.error);
+    } finally {
+      setImportingExcel(false);
+    }
+  }
+
   async function handleEnrichDefinitions() {
     setEnriching(true);
     setError(null);
@@ -158,20 +179,34 @@ export default function ConceptsPage() {
           </button>
           <button
             onClick={handleClassifyAreas}
-            disabled={classifying || linking || extracting || enriching || concepts.length === 0}
+            disabled={
+              classifying || linking || extracting || enriching || importingExcel || concepts.length === 0
+            }
             className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
-            title={concepts.length === 0 ? es.concepts.empty : undefined}
+            title={es.concepts.classifyHint}
           >
             {classifying ? es.concepts.classifying : es.concepts.classifyAreas}
           </button>
           <button
             onClick={handleEnrichDefinitions}
-            disabled={enriching || linking || extracting || classifying || concepts.length === 0}
+            disabled={
+              enriching || linking || extracting || classifying || importingExcel || concepts.length === 0
+            }
             className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
             title={concepts.length === 0 ? es.concepts.empty : undefined}
           >
             {enriching ? es.concepts.enrichingDefinitions : es.concepts.enrichDefinitions}
           </button>
+          <label className="px-4 py-2 bg-accent text-white rounded-lg disabled:opacity-50 cursor-pointer inline-flex items-center">
+            <input
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              className="hidden"
+              disabled={importingExcel || linking || extracting || classifying || enriching}
+              onChange={handleImportExcel}
+            />
+            {importingExcel ? es.concepts.importingExcel : es.concepts.importExcel}
+          </label>
         </div>
 
         {extractResult && (
@@ -198,6 +233,12 @@ export default function ConceptsPage() {
           </div>
         )}
 
+        {importResult && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+            {es.concepts.importExcelSuccess}: {importResult}
+          </div>
+        )}
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
@@ -221,6 +262,8 @@ export default function ConceptsPage() {
           <>
             <p className="text-sm text-gray-500 mb-4">
               {concepts.length} {es.concepts.count}
+              {" · "}
+              {concepts.filter((c) => c.subtopic).length} categorizados
             </p>
             <div className="grid gap-3">
               {concepts.map((c) => (

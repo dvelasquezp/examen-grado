@@ -95,10 +95,14 @@ async def link_notes_to_concepts(
 )
 async def classify_concept_areas(
     slug: str,
+    force: bool = Query(
+        False,
+        description="Si es false, no sobrescribe categorías ya asignadas (p. ej. desde Excel)",
+    ),
     session: AsyncSession = Depends(get_db_session),
 ):
     try:
-        result = await ClassifyAreasUseCase(session).execute(slug)
+        result = await ClassifyAreasUseCase(session).execute(slug, force=force)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     return ClassifyAreasResponse(
@@ -179,7 +183,7 @@ async def import_excel_definitions(
 async def list_concepts(
     slug: str,
     q: str | None = None,
-    limit: int = Query(100, le=500),
+    limit: int = Query(500, le=1000),
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ):
