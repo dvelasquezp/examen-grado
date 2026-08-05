@@ -131,6 +131,7 @@ class ImportExcelDefinitionsResponse(BaseModel):
     created: int
     unchanged: int
     unmatched: int
+    pruned: int = 0
     examples: list[str]
 
 

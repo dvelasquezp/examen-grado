@@ -142,6 +142,10 @@ async def import_excel_definitions(
     slug: str,
     file: UploadFile = File(..., description="Excel de flashcards (concepto/definición)"),
     create_missing: bool = Query(True),
+    prune_missing: bool = Query(
+        False,
+        description="Elimina conceptos que no estén en el Excel (basura OCR)",
+    ),
     session: AsyncSession = Depends(get_db_session),
 ):
     data = await file.read()
@@ -154,6 +158,7 @@ async def import_excel_definitions(
             slug,
             data,
             create_missing=create_missing,
+            prune_missing=prune_missing,
             source_filename=file.filename or "Flashcards_Derecho_Civil.xlsx",
         )
     except ValueError as e:
@@ -165,6 +170,7 @@ async def import_excel_definitions(
         created=result.created,
         unchanged=result.unchanged,
         unmatched=result.unmatched,
+        pruned=result.pruned,
         examples=result.examples,
     )
 

@@ -24,3 +24,12 @@ def test_oferta_tiene_conectores():
     cards = ExcelFlashcardsLoader().load_path(EXCEL)
     oferta = next(c for c in cards if c.title.lower() == "oferta")
     assert "por el cual" in oferta.definition.lower()
+
+
+def test_excel_incluye_materia():
+    if not EXCEL.exists():
+        return
+    cards = ExcelFlashcardsLoader().load_path(EXCEL)
+    aceptacion = next(c for c in cards if c.title.lower() == "aceptación")
+    assert aceptacion.materia == "Acto Jurídico"
+    assert any(c.materia == "REX" for c in cards)

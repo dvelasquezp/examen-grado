@@ -30,8 +30,40 @@ def title_base(text: str) -> str:
     return PARENS.sub(" ", normalize_title(text)).strip()
 
 
+# Homologa nombres del Excel a las categorías ya usadas en la app / apuntes.
+MATERIA_ALIASES: dict[str, str] = {
+    "persona": "Personas",
+    "personas": "Personas",
+    "responsabilidad": "REX",
+    "rex": "REX",
+    "responsabilidad extracontractual": "REX",
+    "teoria de la ley": "Teoría de la Ley",
+    "teoría de la ley": "Teoría de la Ley",
+    "acto juridico": "Acto Jurídico",
+    "acto jurídico": "Acto Jurídico",
+    "contratos": "Contratos",
+    "obligaciones": "Obligaciones",
+    "bienes": "Bienes",
+    "familia": "Familia",
+    "sucesorio": "Sucesorio",
+}
+
+
+def canonical_materia(materia: str | None) -> str | None:
+    if not materia:
+        return None
+    raw = materia.strip()
+    key = normalize_title(raw)
+    return MATERIA_ALIASES.get(key, raw)
+
+
 class ExcelFlashcardsLoader:
-    PREFERRED_SHEETS = ("Concepto-Definición", "Concepto-Definicion", "Flashcards Derecho Civil")
+    # Preferir la hoja con columna Materia para categorizar.
+    PREFERRED_SHEETS = (
+        "Flashcards Derecho Civil",
+        "Concepto-Definición",
+        "Concepto-Definicion",
+    )
 
     def load_path(self, path: Path) -> list[ExcelFlashcard]:
         return self.load_bytes(path.read_bytes())
@@ -60,11 +92,12 @@ class ExcelFlashcardsLoader:
             if key in seen:
                 continue
             seen.add(key)
+            materia_raw = self._cell(row, materia_idx) if materia_idx is not None else None
             cards.append(
                 ExcelFlashcard(
                     title=title,
                     definition=definition,
-                    materia=self._cell(row, materia_idx) if materia_idx is not None else None,
+                    materia=canonical_materia(materia_raw),
                 )
             )
         return cards

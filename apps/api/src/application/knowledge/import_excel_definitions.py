@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.catalog.enums import DocumentType, SourceRole
@@ -19,10 +19,16 @@ from src.infrastructure.knowledge.excel_flashcards_loader import (
 )
 from src.infrastructure.persistence.postgres.concept_repository import ConceptRepository
 from src.infrastructure.persistence.postgres.knowledge_models import (
+    ConceptChunkLinkModel,
     ConceptDefinitionModel,
     ConceptModel,
 )
 from src.infrastructure.persistence.postgres.models import SubjectModel
+from src.infrastructure.persistence.postgres.study_models import (
+    ExamQuestionModel,
+    OralExamSessionModel,
+    UserConceptProgressModel,
+)
 
 
 @dataclass
@@ -33,6 +39,7 @@ class ImportExcelResult:
     created: int
     unchanged: int
     unmatched: int
+    pruned: int
     examples: list[str]
 
 
@@ -48,6 +55,7 @@ class ImportExcelDefinitionsUseCase:
         file_bytes: bytes,
         *,
         create_missing: bool = True,
+        prune_missing: bool = False,
         source_filename: str = "Flashcards_Derecho_Civil.xlsx",
     ) -> ImportExcelResult:
         subject = await self._get_subject(subject_slug)
@@ -63,6 +71,7 @@ class ImportExcelDefinitionsUseCase:
         created = 0
         unchanged = 0
         unmatched = 0
+        pruned = 0
         examples: list[str] = []
         used_ids: set[UUID] = set()
 
@@ -90,6 +99,42 @@ class ImportExcelDefinitionsUseCase:
             if len(examples) < 8:
                 examples.append(f"+ {card.title}")
 
+        if prune_missing:
+            orphan_ids = [c.id for c in concepts if c.id not in used_ids]
+            if orphan_ids:
+                titles = {c.id: c.title for c in concepts if c.id in set(orphan_ids)}
+                await self.session.execute(
+                    update(OralExamSessionModel)
+                    .where(OralExamSessionModel.current_concept_id.in_(orphan_ids))
+                    .values(current_concept_id=None)
+                )
+                await self.session.execute(
+                    delete(UserConceptProgressModel).where(
+                        UserConceptProgressModel.concept_id.in_(orphan_ids)
+                    )
+                )
+                await self.session.execute(
+                    delete(ExamQuestionModel).where(
+                        ExamQuestionModel.concept_id.in_(orphan_ids)
+                    )
+                )
+                await self.session.execute(
+                    delete(ConceptChunkLinkModel).where(
+                        ConceptChunkLinkModel.concept_id.in_(orphan_ids)
+                    )
+                )
+                await self.session.execute(
+                    delete(ConceptDefinitionModel).where(
+                        ConceptDefinitionModel.concept_id.in_(orphan_ids)
+                    )
+                )
+                await self.session.execute(
+                    delete(ConceptModel).where(ConceptModel.id.in_(orphan_ids))
+                )
+                pruned = len(orphan_ids)
+                for concept_id in orphan_ids[:5]:
+                    examples.append(f"✕ {titles.get(concept_id, concept_id)}")
+
         return ImportExcelResult(
             subject_slug=subject_slug,
             excel_rows=len(cards),
@@ -97,6 +142,7 @@ class ImportExcelDefinitionsUseCase:
             created=created,
             unchanged=unchanged,
             unmatched=unmatched,
+            pruned=pruned,
             examples=examples,
         )
 
@@ -105,6 +151,7 @@ class ImportExcelDefinitionsUseCase:
     ) -> bool:
         definition_changed = (concept.definition or "").strip() != card.definition.strip()
         title_changed = (concept.title or "").strip() != card.title.strip()
+        # Siempre alinear categoría con la Materia del Excel cuando viene informada.
         subtopic_changed = bool(card.materia) and (concept.subtopic or "") != card.materia
 
         if not definition_changed and not title_changed and not subtopic_changed:
@@ -117,7 +164,7 @@ class ImportExcelDefinitionsUseCase:
             concept.definition = card.definition
             concept.confidence_score = max(concept.confidence_score or 0.0, 0.98)
             await self._upsert_primary_definition(concept.id, card.definition, source_filename)
-        if subtopic_changed:
+        if subtopic_changed and card.materia:
             concept.subtopic = card.materia
         return True
 
