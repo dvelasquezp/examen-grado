@@ -124,6 +124,16 @@ class EnrichDefinitionsResponse(BaseModel):
     examples: list[str]
 
 
+class ImportExcelDefinitionsResponse(BaseModel):
+    subject_slug: str
+    excel_rows: int
+    updated: int
+    created: int
+    unchanged: int
+    unmatched: int
+    examples: list[str]
+
+
 class ResetConceptsResponse(BaseModel):
     subject_slug: str
     concepts_deleted: int

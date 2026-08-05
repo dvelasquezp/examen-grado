@@ -2,12 +2,13 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.knowledge.classify_areas import ClassifyAreasUseCase
 from src.application.knowledge.enrich_definitions import EnrichDefinitionsUseCase
 from src.application.knowledge.extract_concepts import ExtractConceptsUseCase
+from src.application.knowledge.import_excel_definitions import ImportExcelDefinitionsUseCase
 from src.application.knowledge.link_notes import LinkNotesUseCase
 from src.application.knowledge.reset_concepts import ResetConceptsUseCase
 from src.config.settings import Settings, get_settings
@@ -22,6 +23,7 @@ from src.presentation.v1.knowledge_schemas import (
     ConceptSummaryResponse,
     EnrichDefinitionsResponse,
     ExtractConceptsResponse,
+    ImportExcelDefinitionsResponse,
     LinkNotesResponse,
     ResetConceptsResponse,
 )
@@ -128,6 +130,41 @@ async def enrich_concept_definitions(
         enriched=result.enriched,
         titles_fixed=result.titles_fixed,
         unchanged=result.unchanged,
+        examples=result.examples,
+    )
+
+
+@router.post(
+    "/subjects/{slug}/concepts/import-excel",
+    response_model=ImportExcelDefinitionsResponse,
+)
+async def import_excel_definitions(
+    slug: str,
+    file: UploadFile = File(..., description="Excel de flashcards (concepto/definición)"),
+    create_missing: bool = Query(True),
+    session: AsyncSession = Depends(get_db_session),
+):
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Archivo vacío")
+    if len(data) > 20 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Excel demasiado grande (máx. 20 MB)")
+    try:
+        result = await ImportExcelDefinitionsUseCase(session).execute(
+            slug,
+            data,
+            create_missing=create_missing,
+            source_filename=file.filename or "Flashcards_Derecho_Civil.xlsx",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return ImportExcelDefinitionsResponse(
+        subject_slug=result.subject_slug,
+        excel_rows=result.excel_rows,
+        updated=result.updated,
+        created=result.created,
+        unchanged=result.unchanged,
+        unmatched=result.unmatched,
         examples=result.examples,
     )
 
