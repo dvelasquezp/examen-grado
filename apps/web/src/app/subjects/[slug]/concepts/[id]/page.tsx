@@ -12,6 +12,7 @@ export default function ConceptDetailPage() {
   const conceptId = params.id as string;
   const [concept, setConcept] = useState<ConceptDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,6 +21,27 @@ export default function ConceptDetailPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [conceptId]);
+
+  async function handleGenerateExamples() {
+    setGenerating(true);
+    setError(null);
+    try {
+      const result = await api.generateConceptExamples(slug, conceptId);
+      setConcept((prev) =>
+        prev
+          ? {
+              ...prev,
+              simple_explanation: result.short_example,
+              practical_case: result.practical_case,
+            }
+          : prev
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : es.common.error);
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   if (loading) return <div className="p-8 text-gray-500">{es.common.loading}</div>;
   if (error || !concept) {
@@ -57,6 +79,41 @@ export default function ConceptDetailPage() {
             )}
           </section>
         )}
+
+        <section className="bg-white rounded-xl border p-6 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase">
+              {es.concepts.shortExample} / {es.concepts.practicalCase}
+            </h2>
+            <button
+              type="button"
+              onClick={handleGenerateExamples}
+              disabled={generating}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg disabled:opacity-50"
+            >
+              {generating ? es.concepts.generatingExamples : es.concepts.generateExamples}
+            </button>
+          </div>
+          {concept.simple_explanation ? (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">{es.concepts.shortExample}</p>
+              <p className="text-gray-800 leading-relaxed">{concept.simple_explanation}</p>
+            </div>
+          ) : null}
+          {concept.practical_case ? (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">{es.concepts.practicalCase}</p>
+              <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                {concept.practical_case}
+              </p>
+            </div>
+          ) : null}
+          {!concept.simple_explanation && !concept.practical_case && (
+            <p className="text-sm text-gray-500">
+              Aún no hay ejemplos. Genera uno con Qwen a partir de los apuntes ingestados.
+            </p>
+          )}
+        </section>
 
         {concept.definitions.length > 1 && (
           <section className="bg-white rounded-xl border p-6">

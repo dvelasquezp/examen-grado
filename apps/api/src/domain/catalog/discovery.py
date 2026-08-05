@@ -26,6 +26,15 @@ class DiscoveryResult:
     skipped_paths: int
 
 
+# Carpetas alternativas de la misma materia canónica (p. ej. material nuevo).
+SUBJECT_SLUG_ALIASES: dict[str, str] = {
+    "derecho-civil-2": "derecho-civil",
+}
+CANONICAL_SUBJECT_NAMES: dict[str, str] = {
+    "derecho-civil": "Derecho Civil",
+}
+
+
 class SubjectDiscoveryService:
     """Escanea el filesystem y descubre materias y documentos."""
 
@@ -47,12 +56,7 @@ class SubjectDiscoveryService:
             if not item.is_dir() or item.name in self.settings.exclude_dirs or item.name.startswith("."):
                 continue
 
-            subject = Subject(
-                id=None,
-                slug=Subject.slugify(item.name),
-                name=item.name,
-                folder_path=str(item.relative_to(self.content_root)),
-            )
+            subject = self._merge_subject_folder(item, subjects)
             subjects[subject.slug] = subject
 
             for filepath in self._walk_subject(item):
@@ -80,7 +84,7 @@ class SubjectDiscoveryService:
                 documents.append(
                     DiscoveredDocument(
                         document=doc,
-                        subject=None if is_global else subject,
+                        subject=None if is_global else subjects[subject.slug],
                         is_global=is_global,
                     )
                 )
@@ -121,6 +125,18 @@ class SubjectDiscoveryService:
                 )
             )
         return results
+
+    def _merge_subject_folder(self, item: Path, subjects: dict[str, Subject]) -> Subject:
+        raw_slug = Subject.slugify(item.name)
+        slug = SUBJECT_SLUG_ALIASES.get(raw_slug, raw_slug)
+        name = CANONICAL_SUBJECT_NAMES.get(slug, item.name)
+        folder_path = "Derecho Civil" if item.name == "Derecho Civil" else str(
+            item.relative_to(self.content_root)
+        )
+        previous = subjects.get(slug)
+        if previous and previous.folder_path == "Derecho Civil" and folder_path != "Derecho Civil":
+            return previous
+        return Subject(id=None, slug=slug, name=name, folder_path=folder_path)
 
     def _walk_subject(self, subject_dir: Path):
         for filepath in subject_dir.rglob("*"):

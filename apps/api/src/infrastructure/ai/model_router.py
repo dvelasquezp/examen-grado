@@ -47,33 +47,36 @@ class ModelRouter:
 
     def __init__(self, settings: Settings):
         self.settings = settings
+        backend = self._llm_backend(settings)
+        light_max = 900 if backend == ModelBackend.HF_INFERENCE_API else 4096
+        eval_max = 700 if backend == ModelBackend.HF_INFERENCE_API else 4096
         self.TASK_MODEL_MAP = {
             TaskType.CONCEPT_EXTRACTION: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.1
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.1
             ),
             TaskType.RELATIONSHIP_EXTRACTION: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.1
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.1
             ),
             TaskType.DEFINITION_MERGE: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.05
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.05
             ),
             TaskType.FLASHCARD_GENERATION: ModelConfig(
-                settings.llm_model_light, ModelBackend.LLAMA_CPP, temperature=0.3
+                settings.llm_model_light, backend, max_tokens=light_max, temperature=0.3
             ),
             TaskType.EXAMPLE_GENERATION: ModelConfig(
-                settings.llm_model_light, ModelBackend.LLAMA_CPP, temperature=0.3
+                settings.llm_model_light, backend, max_tokens=light_max, temperature=0.35
             ),
             TaskType.ORAL_QUESTION: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.4
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.4
             ),
             TaskType.ORAL_EVALUATION: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.1
+                settings.llm_model, backend, max_tokens=eval_max, temperature=0.1
             ),
             TaskType.MODEL_ANSWER: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.2
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.2
             ),
             TaskType.CASE_GENERATION: ModelConfig(
-                settings.llm_model, ModelBackend.LLAMA_CPP, temperature=0.3
+                settings.llm_model, backend, max_tokens=light_max, temperature=0.35
             ),
             TaskType.EMBEDDING: ModelConfig(
                 settings.embedding_model, ModelBackend.TRANSFORMERS
@@ -82,6 +85,17 @@ class ModelRouter:
                 settings.stt_model, ModelBackend.FASTER_WHISPER
             ),
         }
+
+    @staticmethod
+    def _llm_backend(settings: Settings) -> ModelBackend:
+        value = (settings.llm_backend or "").lower().strip()
+        if value in {ModelBackend.HF_INFERENCE_API, "hf", "huggingface", "inference"}:
+            return ModelBackend.HF_INFERENCE_API
+        if value == ModelBackend.TRANSFORMERS:
+            return ModelBackend.TRANSFORMERS
+        if settings.hf_inference_api_fallback and settings.hf_token:
+            return ModelBackend.HF_INFERENCE_API
+        return ModelBackend.LLAMA_CPP
 
     def resolve(self, task: TaskType) -> ModelConfig:
         config = self.TASK_MODEL_MAP.get(task)

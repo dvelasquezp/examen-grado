@@ -93,6 +93,26 @@ class GenerateQuestionsResponse(BaseModel):
     created: int
 
 
+class GenerateExamplesRequest(BaseModel):
+    limit: int = Field(default=10, ge=1, le=50)
+    force: bool = False
+
+
+class GenerateExamplesResponse(BaseModel):
+    subject_slug: str
+    requested: int
+    generated: int
+    failed: int
+    examples: list[dict]
+
+
+class ConceptExamplesResponse(BaseModel):
+    concept_id: str
+    title: str
+    short_example: str | None = None
+    practical_case: str | None = None
+
+
 class TranscribeResponse(BaseModel):
     text: str
     language: str | None = None

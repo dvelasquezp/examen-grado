@@ -78,6 +78,7 @@ class ConceptDetailResponse(BaseModel):
     title: str
     definition: str | None
     simple_explanation: str | None
+    practical_case: str | None = None
     subtopic: str | None
     difficulty: int
     importance_score: float

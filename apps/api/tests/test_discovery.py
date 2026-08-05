@@ -79,3 +79,22 @@ class TestSubjectDiscovery:
 
         filenames = [d.document.filename for d in result.documents]
         assert "fake.pdf" not in filenames
+
+    def test_merges_derecho_civil_2_into_same_subject(self, settings, sample_content):
+        civil2 = sample_content / "DERECHO CIVIL 2"
+        (civil2 / "1. ACTO JURÍDICO").mkdir(parents=True)
+        (civil2 / "MEMORIZADOR CIVIL.pdf").write_bytes(b"memo")
+        (civil2 / "1. ACTO JURÍDICO" / "resumen.pdf").write_bytes(b"notes")
+        settings.content_path = str(sample_content)
+        service = SubjectDiscoveryService(settings)
+        result = service.discover()
+
+        assert len(result.subjects) == 1
+        assert result.subjects[0].slug == "derecho-civil"
+        filenames = {d.document.filename for d in result.documents}
+        assert "MEMORIZADOR CIVIL.pdf" in filenames
+        assert "resumen.pdf" in filenames
+        civil2_docs = [
+            d for d in result.documents if d.document.filepath.startswith("DERECHO CIVIL 2")
+        ]
+        assert all(d.subject and d.subject.slug == "derecho-civil" for d in civil2_docs)

@@ -20,9 +20,22 @@ class ClassificationRule:
 RULES: list[ClassificationRule] = [
     ClassificationRule("Cedulario*.pdf", DocumentType.OFFICIAL_SYLLABUS, SourceRole.DOCTRINE, is_global=True),
     ClassificationRule("**/Flashcards*.pdf", DocumentType.FLASHCARDS, SourceRole.DOCTRINE),
+    ClassificationRule("**/MEMORIZADOR*.pdf", DocumentType.FLASHCARDS, SourceRole.DOCTRINE),
+    ClassificationRule("**/Memorizador*.pdf", DocumentType.FLASHCARDS, SourceRole.DOCTRINE),
     ClassificationRule("**/Apuntes/*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
     ClassificationRule("**/Guía*.docx", DocumentType.EXAM_GUIDE, SourceRole.EXAM_PATTERN_ONLY),
     ClassificationRule("**/Guia*.docx", DocumentType.EXAM_GUIDE, SourceRole.EXAM_PATTERN_ONLY),
+    # Material doctrinal adicional (DERECHO CIVIL 2 y similares)
+    ClassificationRule("**/Artículos*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Articulos*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Artículos*.docx", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Articulos*.docx", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Cuadros*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Pendientes*.docx", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/Pendientes*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    # Catch-all: PDFs/DOCX doctrinales dentro de carpetas de materia
+    ClassificationRule("**/*.pdf", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
+    ClassificationRule("**/*.docx", DocumentType.LECTURE_NOTES, SourceRole.DOCTRINE),
 ]
 
 

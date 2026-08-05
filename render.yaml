@@ -37,3 +37,20 @@ services:
         value: /app/content
       - key: APP_ENV
         value: production
+      - key: LLM_BACKEND
+        value: hf_inference_api
+      - key: LLM_MODEL
+        value: Qwen/Qwen3-32B
+      - key: LLM_MODEL_LIGHT
+        value: Qwen/Qwen3-32B
+      - key: HF_INFERENCE_API_FALLBACK
+        value: "true"
+      - key: HF_INFERENCE_BASE_URL
+        value: https://router.huggingface.co/v1
+      - key: HF_INFERENCE_PROVIDER_POLICY
+        value: cheapest
+      - key: HF_INFERENCE_TIMEOUT_SECONDS
+        value: "90"
+      # Pegar el mismo token local en el dashboard de Render (Environment).
+      - key: HF_TOKEN
+        sync: false

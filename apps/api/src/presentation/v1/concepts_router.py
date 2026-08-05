@@ -170,12 +170,14 @@ async def get_concept(concept_id: UUID, session: AsyncSession = Depends(get_db_s
 
     note_links = await repo.list_chunk_links(concept_id)
 
+    meta = concept.metadata or {}
     return ConceptDetailResponse(
         id=concept.id,  # type: ignore[arg-type]
         slug=concept.slug,
         title=concept.title,
         definition=concept.definition,
-        simple_explanation=concept.simple_explanation,
+        simple_explanation=concept.simple_explanation or meta.get("short_example"),
+        practical_case=meta.get("practical_case"),
         subtopic=concept.subtopic,
         difficulty=concept.difficulty,
         importance_score=concept.importance_score,

@@ -93,7 +93,11 @@
     "difficulty": "Dificultad",
     "sources": "Fuentes",
     "noteReferences": "Referencias en Apuntes",
-    "browse": "Explorar conceptos"
+    "browse": "Explorar conceptos",
+    "shortExample": "Ejemplo",
+    "practicalCase": "Caso práctico",
+    "generateExamples": "Generar ejemplos con Qwen",
+    "generatingExamples": "Generando con Qwen…"
   },
   "sources": {
     "openInApp": "Ver en apunte",
@@ -168,7 +172,11 @@
     "transcribe": "Transcribir a texto",
     "transcribing": "Transcribiendo…",
     "answerPlaceholderAudio": "La transcripción aparecerá aquí. Puedes editarla antes de enviar.",
-    "answerPlaceholderText": "Escribe tu respuesta oral aquí..."
+    "answerPlaceholderText": "Escribe tu respuesta oral aquí...",
+    "methodQwen": "Evaluado con Qwen3-32B",
+    "methodHeuristic": "Evaluación heurística (respaldo)",
+    "missingPoints": "Puntos a reforzar",
+    "strengths": "Aciertos"
   },
   "graph": {
     "title": "Mapa conceptual",

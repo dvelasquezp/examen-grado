@@ -8,16 +8,19 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.study.example_generator import ExampleGenerator
 from src.application.study.fill_blank_generator import FillBlankGenerator
 from src.application.study.graph_service import GraphService
 from src.application.study.logic_exercise_generator import LogicExerciseGenerator
 from src.application.study.oral_exam_service import OralExamService
 from src.application.study.progress_service import ProgressService
 from src.application.study.question_generator import QuestionGenerator
+from src.config.settings import Settings, get_settings
 from src.infrastructure.ai.stt_service import transcribe_audio
 from src.infrastructure.persistence.postgres.database import get_db_session
 from src.infrastructure.persistence.postgres.models import SubjectModel
 from src.presentation.v1.study_schemas import (
+    ConceptExamplesResponse,
     FillBlankCheckRequest,
     FillBlankCheckResponse,
     FillBlankExerciseResponse,
@@ -25,6 +28,8 @@ from src.presentation.v1.study_schemas import (
     FlashcardResponse,
     FlashcardReviewRequest,
     FlashcardReviewResponse,
+    GenerateExamplesRequest,
+    GenerateExamplesResponse,
     GenerateQuestionsResponse,
     GraphResponse,
     GraphEdgeResponse,
@@ -104,6 +109,53 @@ async def generate_questions(slug: str, session: AsyncSession = Depends(get_db_s
     subject = await _get_subject(session, slug)
     created = await QuestionGenerator(session).ensure_questions_for_subject(subject.id)
     return GenerateQuestionsResponse(created=created)
+
+
+@router.post(
+    "/subjects/{slug}/examples/generate",
+    response_model=GenerateExamplesResponse,
+)
+async def generate_examples(
+    slug: str,
+    body: GenerateExamplesRequest | None = None,
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+):
+    await _get_subject(session, slug)
+    req = body or GenerateExamplesRequest()
+    try:
+        result = await ExampleGenerator(session, settings).generate_for_subject(
+            slug, limit=req.limit, force=req.force
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return GenerateExamplesResponse(
+        subject_slug=result.subject_slug,
+        requested=result.requested,
+        generated=result.generated,
+        failed=result.failed,
+        examples=result.examples,
+    )
+
+
+@router.post(
+    "/subjects/{slug}/concepts/{concept_id}/examples/generate",
+    response_model=ConceptExamplesResponse,
+)
+async def generate_concept_examples(
+    slug: str,
+    concept_id: UUID,
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+):
+    await _get_subject(session, slug)
+    try:
+        result = await ExampleGenerator(session, settings).generate_for_concept(concept_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    return ConceptExamplesResponse(**result)
 
 
 @router.post("/subjects/{slug}/oral-exam/start", response_model=OralExamStartResponse)

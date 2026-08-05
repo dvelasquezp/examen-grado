@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     debug: bool = True
 
     content_path: str = "."
-    content_exclude_dirs: str = "apps,workers,infra,scripts,docs,node_modules,.git,.venv,venv,data,models,.cache,huggingface"
+    content_exclude_dirs: str = "apps,workers,infra,scripts,docs,node_modules,.git,.venv,venv,data,models,.cache,huggingface,dist"
 
     database_url: str = "postgresql+asyncpg://examen:examen@localhost:5432/examen_grado"
     database_url_sync: str = "postgresql://examen:examen@localhost:5432/examen_grado"
@@ -52,14 +52,17 @@ class Settings(BaseSettings):
     s3_secret_key: str = "examen_minio_secret"
     s3_bucket: str = "examen-grado"
 
-    llm_backend: str = "llama_cpp"
-    llm_model: str = "Qwen/Qwen2.5-7B-Instruct"
-    llm_model_light: str = "Qwen/Qwen2.5-3B-Instruct"
+    llm_backend: str = "hf_inference_api"
+    llm_model: str = "Qwen/Qwen3-32B"
+    llm_model_light: str = "Qwen/Qwen3-32B"
     embedding_model: str = "BAAI/bge-m3"
     embedding_dimensions: int = 1024
     stt_model: str = "openai/whisper-large-v3"
     hf_token: str = ""
-    hf_inference_api_fallback: bool = False
+    hf_inference_api_fallback: bool = True
+    hf_inference_base_url: str = "https://router.huggingface.co/v1"
+    hf_inference_provider_policy: str = "cheapest"
+    hf_inference_timeout_seconds: float = 90.0
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000

@@ -101,6 +101,7 @@ export interface ConceptDetail {
   title: string;
   definition: string | null;
   simple_explanation: string | null;
+  practical_case: string | null;
   subtopic: string | null;
   difficulty: number;
   importance_score: number;
@@ -204,6 +205,16 @@ export interface FlashcardCategory {
   concept_count: number;
 }
 
+export interface OralExamEvaluation {
+  score: number;
+  feedback: string;
+  coverage: number;
+  method?: string;
+  missing_points?: string[];
+  strengths?: string[];
+  llm_error?: string;
+}
+
 export interface OralExamState {
   session_id?: string;
   status?: string;
@@ -212,8 +223,15 @@ export interface OralExamState {
   concept_title?: string | null;
   model_answer_hint?: string | null;
   done?: boolean;
-  evaluation?: { score: number; feedback: string; coverage: number };
+  evaluation?: OralExamEvaluation;
   transcript?: Array<Record<string, unknown>>;
+}
+
+export interface ConceptExamples {
+  concept_id: string;
+  title: string;
+  short_example: string | null;
+  practical_case: string | null;
 }
 
 export interface GraphData {
@@ -360,6 +378,21 @@ export const api = {
     ),
   generateQuestions: (slug: string) =>
     fetchApi<{ created: number }>(`/subjects/${slug}/questions/generate`, { method: "POST" }),
+  generateConceptExamples: (slug: string, conceptId: string) =>
+    fetchApi<ConceptExamples>(`/subjects/${slug}/concepts/${conceptId}/examples/generate`, {
+      method: "POST",
+    }),
+  generateExamples: (slug: string, limit = 10, force = false) =>
+    fetchApi<{
+      subject_slug: string;
+      requested: number;
+      generated: number;
+      failed: number;
+      examples: ConceptExamples[];
+    }>(`/subjects/${slug}/examples/generate`, {
+      method: "POST",
+      body: JSON.stringify({ limit, force }),
+    }),
   startOralExam: (slug: string) =>
     fetchApi<OralExamState>(`/subjects/${slug}/oral-exam/start`, { method: "POST" }),
   answerOralExam: (slug: string, sessionId: string, answer: string) =>

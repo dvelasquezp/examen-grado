@@ -186,10 +186,33 @@ export default function OralExamPage() {
         {evaluation && (
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <h3 className="font-semibold text-blue-900">{t.feedback}</h3>
+            <p className="text-xs text-blue-700 mt-1">
+              {evaluation.method === "qwen3_hf" ? t.methodQwen : t.methodHeuristic}
+            </p>
             <p className="text-sm text-blue-800 mt-1">
               {t.score}: {Math.round((evaluation.coverage ?? evaluation.score ?? 0) * 100)}%
             </p>
             <p className="text-sm text-gray-700 mt-2">{evaluation.feedback}</p>
+            {evaluation.missing_points && evaluation.missing_points.length > 0 && (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-blue-900">{t.missingPoints}</p>
+                <ul className="list-disc pl-5 text-sm text-gray-700 mt-1">
+                  {evaluation.missing_points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {evaluation.strengths && evaluation.strengths.length > 0 && (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-blue-900">{t.strengths}</p>
+                <ul className="list-disc pl-5 text-sm text-gray-700 mt-1">
+                  {evaluation.strengths.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {state?.model_answer_hint && (
               <details className="mt-3">
                 <summary className="text-sm text-primary cursor-pointer">{t.hint}</summary>
