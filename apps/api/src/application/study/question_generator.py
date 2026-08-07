@@ -3,7 +3,7 @@
 import random
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.persistence.postgres.knowledge_models import ConceptModel
@@ -24,26 +24,35 @@ class QuestionGenerator:
         self.session = session
 
     async def ensure_questions_for_subject(self, subject_id: UUID, limit: int = 500) -> int:
-        concepts = await self.session.execute(
-            select(ConceptModel)
-            .where(ConceptModel.subject_id == subject_id)
-            .order_by(ConceptModel.title)
-            .limit(limit)
-        )
-        created = 0
-        for concept in concepts.scalars().all():
-            existing_count = await self.session.scalar(
-                select(func.count())
-                .select_from(ExamQuestionModel)
-                .where(
-                    ExamQuestionModel.concept_id == concept.id,
-                    ExamQuestionModel.question_type == "ORAL",
+        concepts = list(
+            (
+                await self.session.execute(
+                    select(ConceptModel)
+                    .where(ConceptModel.subject_id == subject_id)
+                    .order_by(ConceptModel.title)
+                    .limit(limit)
                 )
-            )
-            if existing_count and existing_count > 0:
+            ).scalars().all()
+        )
+        if not concepts:
+            return 0
+
+        existing_ids = set(
+            (
+                await self.session.execute(
+                    select(ExamQuestionModel.concept_id).where(
+                        ExamQuestionModel.subject_id == subject_id,
+                        ExamQuestionModel.question_type == "ORAL",
+                    )
+                )
+            ).scalars().all()
+        )
+
+        created = 0
+        for concept in concepts:
+            if concept.id in existing_ids:
                 continue
             template = random.choice(ORAL_TEMPLATES)
-            # replace evita KeyError si el título trae llaves { }
             question_text = template.replace("{title}", concept.title or "")
             self.session.add(
                 ExamQuestionModel(
@@ -58,7 +67,9 @@ class QuestionGenerator:
                 )
             )
             created += 1
-        await self.session.flush()
+
+        if created:
+            await self.session.flush()
         return created
 
     async def get_random_question(self, subject_id: UUID, exclude_ids: list[UUID] | None = None):

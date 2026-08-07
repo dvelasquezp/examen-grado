@@ -16,10 +16,10 @@ export function apiTarget(): string {
 // En el plan gratuito de Render la API se duerme y tarda cerca de un minuto en
 // responder a la primera petición, así que reintentamos en vez de dar error.
 // El presupuesto total queda por debajo del minuto que Vercel concede a una
-// función: conviene rendirse con un mensaje propio antes de que la plataforma
-// corte la respuesta.
-const TOTAL_BUDGET_MS = 45000;
-const ATTEMPT_TIMEOUT_MS = 20000;
+// función (maxDuration=60): conviene rendirse con un mensaje propio antes de
+// que la plataforma corte la respuesta.
+const TOTAL_BUDGET_MS = 55000;
+const ATTEMPT_TIMEOUT_MS = 50000;
 const RETRY_DELAY_MS = 2000;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -65,10 +65,13 @@ export async function proxyToApi(request: Request, path: string): Promise<Respon
     }
   }
 
+  const coldStart =
+    /timeout|aborted|fetch failed|ECONNRESET|ENOTFOUND|socket/i.test(lastError);
   return Response.json(
     {
-      detail:
-        "La API está despertando y aún no responde. Espera unos segundos y vuelve a intentarlo.",
+      detail: coldStart
+        ? "La API está despertando o la petición tardó demasiado. Espera unos segundos y vuelve a intentarlo."
+        : "No se pudo contactar la API. Reintenta en unos segundos.",
       error: lastError,
     },
     { status: 503 },
