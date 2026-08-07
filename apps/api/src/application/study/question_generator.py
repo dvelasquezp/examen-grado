@@ -3,7 +3,7 @@
 import random
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.persistence.postgres.knowledge_models import ConceptModel
@@ -23,7 +23,7 @@ class QuestionGenerator:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def ensure_questions_for_subject(self, subject_id: UUID, limit: int = 200) -> int:
+    async def ensure_questions_for_subject(self, subject_id: UUID, limit: int = 500) -> int:
         concepts = await self.session.execute(
             select(ConceptModel)
             .where(ConceptModel.subject_id == subject_id)
@@ -32,16 +32,19 @@ class QuestionGenerator:
         )
         created = 0
         for concept in concepts.scalars().all():
-            existing = await self.session.execute(
-                select(ExamQuestionModel.id).where(
+            existing_count = await self.session.scalar(
+                select(func.count())
+                .select_from(ExamQuestionModel)
+                .where(
                     ExamQuestionModel.concept_id == concept.id,
                     ExamQuestionModel.question_type == "ORAL",
                 )
             )
-            if existing.scalar_one_or_none():
+            if existing_count and existing_count > 0:
                 continue
             template = random.choice(ORAL_TEMPLATES)
-            question_text = template.format(title=concept.title)
+            # replace evita KeyError si el título trae llaves { }
+            question_text = template.replace("{title}", concept.title or "")
             self.session.add(
                 ExamQuestionModel(
                     subject_id=subject_id,
@@ -59,9 +62,14 @@ class QuestionGenerator:
         return created
 
     async def get_random_question(self, subject_id: UUID, exclude_ids: list[UUID] | None = None):
-        query = select(ExamQuestionModel, ConceptModel).join(
-            ConceptModel, ExamQuestionModel.concept_id == ConceptModel.id
-        ).where(ExamQuestionModel.subject_id == subject_id)
+        query = (
+            select(ExamQuestionModel, ConceptModel)
+            .join(ConceptModel, ExamQuestionModel.concept_id == ConceptModel.id)
+            .where(
+                ExamQuestionModel.subject_id == subject_id,
+                ExamQuestionModel.question_type == "ORAL",
+            )
+        )
         if exclude_ids:
             query = query.where(ExamQuestionModel.concept_id.notin_(exclude_ids))
         result = await self.session.execute(query)

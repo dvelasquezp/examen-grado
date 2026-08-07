@@ -107,7 +107,10 @@ async def review_flashcard(
 @router.post("/subjects/{slug}/questions/generate", response_model=GenerateQuestionsResponse)
 async def generate_questions(slug: str, session: AsyncSession = Depends(get_db_session)):
     subject = await _get_subject(session, slug)
-    created = await QuestionGenerator(session).ensure_questions_for_subject(subject.id)
+    try:
+        created = await QuestionGenerator(session).ensure_questions_for_subject(subject.id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generando preguntas: {e}") from e
     return GenerateQuestionsResponse(created=created)
 
 
@@ -161,7 +164,10 @@ async def generate_concept_examples(
 @router.post("/subjects/{slug}/oral-exam/start", response_model=OralExamStartResponse)
 async def start_oral_exam(slug: str, session: AsyncSession = Depends(get_db_session)):
     subject = await _get_subject(session, slug)
-    result = await OralExamService(session).start_session(subject.id)
+    try:
+        result = await OralExamService(session).start_session(subject.id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error iniciando simulacro: {e}") from e
     return OralExamStartResponse(**result)
 
 
