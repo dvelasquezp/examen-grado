@@ -168,6 +168,7 @@
     "finished": "Simulacro finalizado",
     "score": "Cobertura",
     "next": "Siguiente pregunta",
+    "skip": "Pasar a la siguiente",
     "modeAudio": "Grabar audio",
     "modeText": "Escribir",
     "audioInstructions": "Graba tu respuesta oral, escúchala y transcribe a texto antes de enviar.",

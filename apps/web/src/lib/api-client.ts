@@ -424,6 +424,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ answer }),
     }),
+  skipOralExam: (slug: string, sessionId: string) =>
+    fetchApi<OralExamState>(`/subjects/${slug}/oral-exam/${sessionId}/skip`, {
+      method: "POST",
+    }),
   graph: (slug: string) => fetchApi<GraphData>(`/subjects/${slug}/graph`),
   matchingGame: (slug: string) => fetchApi<MatchingPair[]>(`/subjects/${slug}/games/matching`),
   fillBlankGame: (slug: string) => fetchApi<FillBlankExercise[]>(`/subjects/${slug}/games/fill-blank`),

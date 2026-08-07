@@ -69,6 +69,22 @@ export default function OralExamPage() {
     }
   }
 
+  async function handleSkip() {
+    if (!sessionId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.skipOralExam(slug, sessionId);
+      setState(data);
+      setAnswer("");
+      recorder.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : es.common.error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const finished = state?.done || state?.status === "completed";
   const evaluation = state?.evaluation;
   const canSubmit = answer.trim().length > 0;
@@ -172,13 +188,23 @@ export default function OralExamPage() {
                 placeholder={inputMode === "audio" ? t.answerPlaceholderAudio : t.answerPlaceholderText}
               />
 
-              <button
-                type="submit"
-                disabled={loading || !canSubmit}
-                className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
-              >
-                {loading ? es.common.loading : t.submit}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={loading || !canSubmit}
+                  className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
+                >
+                  {loading ? es.common.loading : t.submit}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  disabled={loading}
+                  className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {t.skip}
+                </button>
+              </div>
             </form>
           </div>
         )}

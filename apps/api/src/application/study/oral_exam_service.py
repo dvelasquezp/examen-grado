@@ -73,6 +73,36 @@ class OralExamService:
         await self.session.flush()
         return {"status": "active", "evaluation": evaluation, **next_q}
 
+    async def skip_question(self, session_id: UUID) -> dict:
+        """Pasa a la siguiente pregunta sin evaluar la actual."""
+        session = await self.session.get(OralExamSessionModel, session_id)
+        if not session or session.status != "active":
+            raise ValueError("Sesión no encontrada o ya finalizada")
+
+        concept = (
+            await self.session.get(ConceptModel, session.current_concept_id)
+            if session.current_concept_id
+            else None
+        )
+        transcript = list(session.transcript or [])
+        if session.current_concept_id:
+            transcript.append(
+                {
+                    "concept_id": str(session.current_concept_id),
+                    "concept_title": concept.title if concept else "",
+                    "answer": None,
+                    "skipped": True,
+                    "asked_at": datetime.now(UTC).isoformat(),
+                }
+            )
+            session.transcript = transcript
+
+        next_q = await self._next_question(session)
+        await self.session.flush()
+        if next_q.get("done"):
+            return {"status": "completed", "evaluation": None, "transcript": transcript, **next_q}
+        return {"status": "active", "evaluation": None, **next_q}
+
     async def _next_question(self, session: OralExamSessionModel) -> dict:
         asked_ids = [
             UUID(item["concept_id"])

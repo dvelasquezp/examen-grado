@@ -186,6 +186,20 @@ async def oral_exam_answer(
     return OralExamAnswerResponse(**result)
 
 
+@router.post("/subjects/{slug}/oral-exam/{session_id}/skip", response_model=OralExamAnswerResponse)
+async def oral_exam_skip(
+    slug: str,
+    session_id: UUID,
+    session: AsyncSession = Depends(get_db_session),
+):
+    await _get_subject(session, slug)
+    try:
+        result = await OralExamService(session).skip_question(session_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return OralExamAnswerResponse(**result)
+
+
 @router.get("/subjects/{slug}/graph", response_model=GraphResponse)
 async def concept_graph(slug: str, session: AsyncSession = Depends(get_db_session)):
     subject = await _get_subject(session, slug)
